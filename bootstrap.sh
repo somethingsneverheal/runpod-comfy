@@ -35,6 +35,7 @@ echo "ComfyUI: $(git -C "$COMFY" describe --tags 2>/dev/null || echo 'versión d
 
 nodo https://github.com/crystian/ComfyUI-Crystools          # monitor de GPU y VRAM, siempre
 nodo https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite # cargar vídeo y exportar (ProRes), siempre
+curl -fsSL "https://raw.githubusercontent.com/somethingsneverheal/runpod-comfy/main/video_formats/ProRes10.json?t=$(date +%s)" -o "$COMFY/custom_nodes/ComfyUI-VideoHelperSuite/video_formats/ProRes10.json" || echo "AVISO: no se pudo bajar ProRes10"  # entra en 16 bits, sale ProRes 422 HQ 10 bits
 
 # huggingface_hub ya viene en el venv: no se actualiza, porque transformers exige <2.0
 command -v hf >/dev/null || pip install -q "huggingface_hub>=1.5,<2"
