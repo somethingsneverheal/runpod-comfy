@@ -1,0 +1,35 @@
+{
+  "cloud": "SECURE",
+  "template": "wgd3p4n4o6",
+  "min_cuda": "13.0",
+  "profiles": {
+    "api": {
+      "label": "Seedance solo",
+      "min_vram_gb": 16,
+      "prefer": ["NVIDIA RTX 4000 Ada Generation", "NVIDIA RTX A4000", "NVIDIA GeForce RTX 4090"],
+      "volume": false
+    },
+    "masks": {
+      "label": "Seedance + preprocesado",
+      "min_vram_gb": 24,
+      "prefer": ["NVIDIA GeForce RTX 5090", "NVIDIA GeForce RTX 4090"],
+      "volume": false
+    },
+    "ltx": {
+      "label": "Seedance + LTX",
+      "min_vram_gb": 48,
+      "prefer": ["NVIDIA RTX 6000 Ada Generation"],
+      "volume": true
+    },
+    "full": {
+      "label": "Completo",
+      "min_vram_gb": 80,
+      "prefer": [
+        "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+        "NVIDIA RTX PRO 6000 Blackwell Workstation Edition"
+      ],
+      "volume": true
+    }
+  },
+  "fallback": "la más barata con stock y min_vram_gb o más; nunca menos memoria que la preferida"
+}
