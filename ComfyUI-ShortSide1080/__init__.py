@@ -1,6 +1,6 @@
 """LTX-2.5 tiled fusion mide "FullHD/HD/qHD" por el lado LARGO (1920/1280/960): un clip cuadrado saldría 1920x1920.
 Aquí se mide el lado CORTO (1080/720/540): 16:9 queda igual (1920x1088), cuadrado 1088x1088, vertical 1088x1920."""
-import sys
+import sys, threading, time
 
 NODE_CLASS_MAPPINGS = {}
 
@@ -12,11 +12,16 @@ def _short_edge_ladder(m):
     return ladder
 
 
-# ponytail: depende de nombres privados de ComfyUI-LTXVideo y de que este paquete cargue después; si LTX cambia, falla en alto (ver log)
-for m in list(sys.modules.values()):
-    if getattr(m, "__name__", "").endswith("tiled_fusion_sizes") and hasattr(m, "_ladder_step"):
-        m._ladder_step = _short_edge_ladder(m)
-        print("[ShortSide1080] tamaños medidos por lado corto")
-        break
-else:
+def _patch():  # ComfyUI no garantiza el orden de carga: se espera a que LTX esté importado
+    for _ in range(300):
+        for m in list(sys.modules.values()):
+            if getattr(m, "__name__", "").endswith("tiled_fusion_sizes") and hasattr(m, "_ladder_step"):
+                m._ladder_step = _short_edge_ladder(m)
+                print("[ShortSide1080] tamaños medidos por lado corto")
+                return
+        time.sleep(1)
     print("[ShortSide1080] AVISO: no encontré tiled_fusion_sizes, sin parchear")
+
+
+# ponytail: depende de nombres privados de ComfyUI-LTXVideo; si LTX cambia, avisa en el log y queda el lado largo
+threading.Thread(target=_patch, daemon=True).start()
