@@ -60,7 +60,7 @@ hay hdr && { pip install -q openimageio || echo "AVISO: openimageio no se instal
 for b in depth mascaras matting; do hay "$b" && echo "bloque $b: pendiente, instalador aún sin escribir"; done
 
 if [ "$CAMBIOS" = 1 ]; then  # reiniciar ComfyUI para que cargue los nodos nuevos
-  echo "reiniciando ComfyUI…"; curl -s -m 10 http://127.0.0.1:8188/manager/reboot >/dev/null || echo "AVISO: reinicio por Manager falló"
+  echo "reiniciando ComfyUI…"; curl -s -m 10 -X POST http://127.0.0.1:8188/manager/reboot >/dev/null || echo "AVISO: reinicio por Manager falló"
   for _ in $(seq 1 60); do sleep 5; curl -sf -m 3 http://127.0.0.1:8188/system_stats >/dev/null && break; done
 fi
 echo "== bootstrap terminado $(date -u +%FT%TZ)"
