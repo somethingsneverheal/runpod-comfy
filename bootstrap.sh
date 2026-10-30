@@ -46,6 +46,7 @@ if hay upscale || hay hdr; then
   M="$COMFY/models"
   W="$COMFY/user/default/workflows"; mkdir -p "$W"  # workflows 2.5 de Lightricks visibles en la barra "Flujos de trabajo"
   cp -r "$COMFY/custom_nodes/ComfyUI-LTXVideo/example_workflows/2.5/." "$W/" || echo "AVISO: no se copiaron los workflows"
+  curl -fsSL "https://raw.githubusercontent.com/somethingsneverheal/runpod-comfy/main/workflows/LTX-2.5_Upscale_ProRes.json?t=$(date +%s)" -o "$W/LTX-2.5_Upscale_ProRes.json" || echo "AVISO: no se pudo bajar el workflow ProRes"
   # nombres exactos que pide LTX-2.5_V2V_TiledFusion_Upscale.json del repo de Lightricks
   bajar Lightricks/LTX-2.5 \
     diffusion_models/ltx-2.5-22b-distilled-transformer-bf16.safetensors \
