@@ -25,24 +25,25 @@ nodo() {  # nodo <url git>: clona o actualiza y instala sus dependencias
   CAMBIOS=1; echo "nodo ok: $(basename "$d")"
 }
 
-# ComfyUI a la última, solo si la copia es un repositorio git (la imagen lo fija en 0.30.0)
-if [ -d "$COMFY/.git" ]; then git -C "$COMFY" pull --ff-only -q && CAMBIOS=1 && echo "ComfyUI actualizado"; else echo "AVISO: ComfyUI no es un repo git, no se actualiza"; fi
+# ComfyUI queda fijado por la imagen (0.30.0): actualizar el núcleo sin probar puede romper sus dependencias
+echo "ComfyUI: $(git -C "$COMFY" describe --tags 2>/dev/null || echo 'versión de la imagen')"
 
 nodo https://github.com/crystian/ComfyUI-Crystools          # monitor de GPU y VRAM, siempre
 nodo https://github.com/Kosinkadink/ComfyUI-VideoHelperSuite # cargar vídeo y exportar (ProRes), siempre
 
-pip install -q -U "huggingface_hub[cli]" hf_transfer && export HF_HUB_ENABLE_HF_TRANSFER=1
+# huggingface_hub ya viene en el venv: no se actualiza, porque transformers exige <2.0
+command -v hf >/dev/null || pip install -q "huggingface_hub>=1.5,<2"
 HF=$(command -v hf || command -v huggingface-cli)
-bajar() { "$HF" download "$@" || echo "ERROR descargando $1"; }  # bajar <repo> [archivos] --local-dir <carpeta>
+bajar() { "$HF" download "$@" || echo "ERROR descargando $1"; }  # bajar <repo> <archivos…> --local-dir <carpeta>; HF_TOKEN lo lee solo
 
 if hay upscale || hay hdr; then
   nodo https://github.com/Lightricks/ComfyUI-LTXVideo
   M="$COMFY/models"
   bajar Lightricks/LTX-2.5 \
-    --include "diffusion_models/ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors" \
-              "text_encoders/gemma4-12b-with-proj-ltx-2.5-comfy-int8-convrot.safetensors" \
-              "vae/ltx-2.5-video-vae-bf16.safetensors" "vae/ltx-2.5-audio-vae-bf16.safetensors" \
-              "latent_upscale_models/ltx-2.5-latent-spatial-upscaler-x2-bf16-1.0.safetensors" \
+    diffusion_models/ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors \
+    text_encoders/gemma4-12b-with-proj-ltx-2.5-comfy-int8-convrot.safetensors \
+    vae/ltx-2.5-video-vae-bf16.safetensors vae/ltx-2.5-audio-vae-bf16.safetensors \
+    latent_upscale_models/ltx-2.5-latent-spatial-upscaler-x2-bf16-1.0.safetensors \
     --local-dir "$M"
   bajar Lightricks/LTX-2.5-22b-IC-LoRA-Pixel-Spatial-Upscaler ltx-2.5-22b-ic-lora-pixel-spatial-upscaler-x2-1.0.safetensors --local-dir "$M/loras"
   bajar Lightricks/LTX-2.5-22b-IC-LoRA-Restore ltx-2.5-22b-ic-lora-restore-1.0.safetensors --local-dir "$M/loras"
