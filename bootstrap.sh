@@ -39,14 +39,15 @@ bajar() { "$HF" download "$@" || echo "ERROR descargando $1"; }  # bajar <repo> 
 if hay upscale || hay hdr; then
   nodo https://github.com/Lightricks/ComfyUI-LTXVideo
   M="$COMFY/models"
+  # nombres exactos que pide LTX-2.5_V2V_TiledFusion_Upscale.json del repo de Lightricks
   bajar Lightricks/LTX-2.5 \
-    diffusion_models/ltx-2.5-22b-distilled-transformer-comfy-int8-convrot.safetensors \
-    text_encoders/gemma4-12b-with-proj-ltx-2.5-comfy-int8-convrot.safetensors \
+    diffusion_models/ltx-2.5-22b-distilled-transformer-bf16.safetensors \
+    text_encoders/gemma4-12b-with-proj-ltx-2.5-bf16.safetensors \
     vae/ltx-2.5-video-vae-bf16.safetensors vae/ltx-2.5-audio-vae-bf16.safetensors \
     latent_upscale_models/ltx-2.5-latent-spatial-upscaler-x2-bf16-1.0.safetensors \
     --local-dir "$M"
-  bajar Lightricks/LTX-2.5-22b-IC-LoRA-Pixel-Spatial-Upscaler ltx-2.5-22b-ic-lora-pixel-spatial-upscaler-x2-1.0.safetensors --local-dir "$M/loras"
-  bajar Lightricks/LTX-2.5-22b-IC-LoRA-Restore ltx-2.5-22b-ic-lora-restore-1.0.safetensors --local-dir "$M/loras"
+  bajar Comfy-Org/gemma-4 text_encoders/gemma4_e2b_it_bf16.safetensors --local-dir "$M"
+  bajar Lightricks/LTX-2.5-22b-IC-LoRA-Refine-Details ltx-2.5-22b-ic-lora-refine-details-1.0.safetensors --local-dir "$M/loras"
 fi
 hay hdr && { pip install -q openimageio || echo "AVISO: openimageio no se instaló"; echo "hdr: LoRA de HDR de 2.5 pendiente de localizar"; }
 for b in depth mascaras matting; do hay "$b" && echo "bloque $b: pendiente, instalador aún sin escribir"; done
