@@ -1,0 +1,26 @@
+{
+ "main_pass": [
+  "-n",
+  "-c:v",
+  "prores_ks",
+  "-profile:v",
+  "hq",
+  "-pix_fmt",
+  "yuv422p10le",
+  "-vf",
+  "scale=out_color_matrix=bt709",
+  "-colorspace",
+  "bt709",
+  "-color_primaries",
+  "bt709",
+  "-color_trc",
+  "bt709"
+ ],
+ "fake_trc": "bt709",
+ "audio_pass": [
+  "-c:a",
+  "pcm_s16le"
+ ],
+ "extension": "mov",
+ "input_color_depth": "16bit"
+}
