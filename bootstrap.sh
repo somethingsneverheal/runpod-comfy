@@ -39,6 +39,9 @@ bajar() { "$HF" download "$@" || echo "ERROR descargando $1"; }  # bajar <repo> 
 if hay upscale || hay hdr; then
   nodo https://github.com/Lightricks/ComfyUI-LTXVideo
   M="$COMFY/models"
+  # FullHD/HD/qHD por lado corto (cuadrado -> 1088x1088 en vez de 1920x1920)
+  mkdir -p "$COMFY/custom_nodes/ComfyUI-ShortSide1080"
+  curl -fsSL "https://raw.githubusercontent.com/somethingsneverheal/runpod-comfy/main/ComfyUI-ShortSide1080/__init__.py?t=$(date +%s)" -o "$COMFY/custom_nodes/ComfyUI-ShortSide1080/__init__.py" || echo "AVISO: no se pudo bajar ShortSide1080"
   W="$COMFY/user/default/workflows"; mkdir -p "$W"  # workflows 2.5 de Lightricks visibles en la barra "Flujos de trabajo"
   cp -r "$COMFY/custom_nodes/ComfyUI-LTXVideo/example_workflows/2.5/." "$W/" || echo "AVISO: no se copiaron los workflows"
   # nombres exactos que pide LTX-2.5_V2V_TiledFusion_Upscale.json del repo de Lightricks
