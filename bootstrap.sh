@@ -12,6 +12,11 @@ echo "== bootstrap $(date -u +%FT%TZ) PERFIL=${PROFILE:-} BLOQUES=${BLOQUES:-}"
 for _ in $(seq 1 180); do [ -d "$COMFY/custom_nodes/ComfyUI-Manager" ] && break; sleep 5; done
 [ -d "$COMFY/custom_nodes" ] || { echo "ERROR: ComfyUI no apareció en $COMFY"; exit 1; }
 
+# lo primero: ComfyUI ya está arrancando y solo carga lo que encuentre a tiempo
+# FullHD/HD/qHD por lado corto (cuadrado -> 1088x1088 en vez de 1920x1920)
+mkdir -p "$COMFY/custom_nodes/ComfyUI-ShortSide1080"
+curl -fsSL "https://raw.githubusercontent.com/somethingsneverheal/runpod-comfy/main/ComfyUI-ShortSide1080/__init__.py?t=$(date +%s)" -o "$COMFY/custom_nodes/ComfyUI-ShortSide1080/__init__.py" || echo "AVISO: no se pudo bajar ShortSide1080"
+
 source "$COMFY/.venv-cu128/bin/activate" || echo "AVISO: no encuentro el venv, uso python del sistema"
 [ -f /opt/comfyui-runtime-constraints.txt ] && export PIP_CONSTRAINT=/opt/comfyui-runtime-constraints.txt  # que pip no cambie torch
 CAMBIOS=0
@@ -39,16 +44,13 @@ bajar() { "$HF" download "$@" || echo "ERROR descargando $1"; }  # bajar <repo> 
 if hay upscale || hay hdr; then
   nodo https://github.com/Lightricks/ComfyUI-LTXVideo
   M="$COMFY/models"
-  # FullHD/HD/qHD por lado corto (cuadrado -> 1088x1088 en vez de 1920x1920)
-  mkdir -p "$COMFY/custom_nodes/ComfyUI-ShortSide1080"
-  curl -fsSL "https://raw.githubusercontent.com/somethingsneverheal/runpod-comfy/main/ComfyUI-ShortSide1080/__init__.py?t=$(date +%s)" -o "$COMFY/custom_nodes/ComfyUI-ShortSide1080/__init__.py" || echo "AVISO: no se pudo bajar ShortSide1080"
   W="$COMFY/user/default/workflows"; mkdir -p "$W"  # workflows 2.5 de Lightricks visibles en la barra "Flujos de trabajo"
   cp -r "$COMFY/custom_nodes/ComfyUI-LTXVideo/example_workflows/2.5/." "$W/" || echo "AVISO: no se copiaron los workflows"
   # nombres exactos que pide LTX-2.5_V2V_TiledFusion_Upscale.json del repo de Lightricks
   bajar Lightricks/LTX-2.5 \
     diffusion_models/ltx-2.5-22b-distilled-transformer-bf16.safetensors \
     text_encoders/gemma4-12b-with-proj-ltx-2.5-bf16.safetensors \
-    vae/ltx-2.5-video-vae-conv-bf16.safetensors vae/ltx-2.5-audio-vae-bf16.safetensors \
+    vae/ltx-2.5-video-vae-bf16.safetensors vae/ltx-2.5-audio-vae-bf16.safetensors \
     latent_upscale_models/ltx-2.5-latent-spatial-upscaler-x2-bf16-1.0.safetensors \
     --local-dir "$M"
   bajar Comfy-Org/gemma-4 text_encoders/gemma4_e2b_it_bf16.safetensors --local-dir "$M"
