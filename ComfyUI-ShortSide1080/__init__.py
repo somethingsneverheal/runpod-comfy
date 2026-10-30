@@ -2,7 +2,25 @@
 Aquí se mide el lado CORTO (1080/720/540): 16:9 queda igual (1920x1088), cuadrado 1088x1088, vertical 1088x1920."""
 import sys, threading, time
 
-NODE_CLASS_MAPPINGS = {}
+
+class ClipColorMatch:
+    """Un solo ajuste (media y contraste por canal) calculado sobre todo el clip: igual en cada fotograma, no parpadea."""
+    RETURN_TYPES = ("IMAGE",)
+    FUNCTION = "match"
+    CATEGORY = "image/color"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {"required": {"images": ("IMAGE",), "reference": ("IMAGE",)}}
+
+    def match(self, images, reference):
+        dims = (0, 1, 2)
+        m, st = images.mean(dims, keepdim=True), images.std(dims, keepdim=True).clamp_min(1e-5)
+        rm, rst = reference.to(images.device).mean(dims, keepdim=True), reference.to(images.device).std(dims, keepdim=True)
+        return (((images - m) * rst / st + rm).clamp(0, 1),)
+
+
+NODE_CLASS_MAPPINGS = {"ClipColorMatch": ClipColorMatch}
 
 
 def _short_edge_ladder(m):
