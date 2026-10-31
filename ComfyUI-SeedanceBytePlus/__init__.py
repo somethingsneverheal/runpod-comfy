@@ -16,19 +16,21 @@ def ref(name):
 class SeedanceBytePlus:
     OUTPUT_NODE=True;RETURN_TYPES=();FUNCTION="run";CATEGORY="video"
     @classmethod
-    def INPUT_TYPES(c):return {"required":{"prompt":("STRING",{"multiline":True}),"refs":("STRING",{"multiline":True,"tooltip":"un archivo de input por linea"}),"resolution":(["480p","720p","1080p"],{"default":"720p"}),"ratio":(["16:9","9:16","4:3","3:4","1:1","21:9"],),"duration":("INT",{"default":8,"min":4,"max":30}),"prefix":("STRING",{"default":"seedance"})}}
+    def INPUT_TYPES(c):return {"required":{"prompt":("STRING",{"multiline":True}),"refs":("STRING",{"multiline":True,"tooltip":"un archivo de input por linea"}),"resolution":(["480p","720p","1080p"],{"default":"720p"}),"ratio":(["16:9","9:16","4:3","3:4","1:1","21:9"],),"duration":("INT",{"default":8,"min":4,"max":30}),"prefix":("STRING",{"default":"seedance"})},"optional":{"task_id":("STRING",{"default":"","tooltip":"recoger una tarea ya creada, sin generar ni pagar otra"})}}
     @classmethod
     def IS_CHANGED(c,**k):return time.time()  # cada lanzamiento cuesta: nunca reutilizar por cache sin que se pida
-    def run(self,prompt,refs,resolution,ratio,duration,prefix):
-        content=[{"type":"text","text":prompt}]+[ref(n.strip()) for n in refs.splitlines() if n.strip()]
-        t=call(API,{"model":"dreamina-seedance-2-5-260628","content":content,"resolution":resolution,"ratio":ratio,"duration":duration,"generate_audio":False,"watermark":False})["id"]
-        print("seedance tarea",t,flush=True);fin=time.time()+1800
+    def run(self,prompt,refs,resolution,ratio,duration,prefix,task_id=""):
+        t=task_id.strip()
+        if not t:
+            content=[{"type":"text","text":prompt}]+[ref(n.strip()) for n in refs.splitlines() if n.strip()]
+            t=call(API,{"model":"dreamina-seedance-2-5-260628","content":content,"resolution":resolution,"ratio":ratio,"duration":duration,"generate_audio":False,"watermark":False})["id"]
+        print("seedance tarea",t,flush=True);fin=time.time()+7200
         while time.time()<fin:
             s=call(f"{API}/{t}")
             if s["status"]=="succeeded":break
             if s["status"] in("failed","expired","cancelled"):raise RuntimeError(json.dumps(s)[:800])
             time.sleep(10)
-        else:raise RuntimeError("seedance: 30 min sin terminar, tarea "+t)
+        else:raise RuntimeError("seedance: 2 h sin terminar, tarea "+t)
         out=f"{prefix}_{t}.mp4";urllib.request.urlretrieve(s["content"]["video_url"],os.path.join(folder_paths.get_output_directory(),out))
         return {"ui":{"text":[json.dumps({"file":out,"task":t,"usage":s.get("usage")})]}}
 NODE_CLASS_MAPPINGS={"SeedanceBytePlus":SeedanceBytePlus}
