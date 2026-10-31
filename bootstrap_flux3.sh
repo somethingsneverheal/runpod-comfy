@@ -34,9 +34,10 @@ M="$COMFY/models"
 FALLOS=0
 bajar() { "$HF" download "$@" || { echo "ERROR descargando $1"; FALLOS=1; }; }
 
-# bf16: la mejor calidad, sin Base (50 pasos) porque el repo recomienda la rápida para editar
+# bf16: la mejor calidad
 bajar black-forest-labs/flux-3-image-klein-comfy \
   diffusion_models/flux3-image-klein-bf16.safetensors \
+  diffusion_models/flux3-image-klein-base-bf16.safetensors \
   text_encoders/qwen3vl_4b_bf16.safetensors \
   text_encoders/qwen3.5_9b_flux3_prompt_upsampler_bf16.safetensors \
   vae/flux2-vae.safetensors \
