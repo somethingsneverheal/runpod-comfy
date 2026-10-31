@@ -57,6 +57,7 @@ if hay upscale || hay hdr; then
     --local-dir "$M"
   bajar Comfy-Org/gemma-4 text_encoders/gemma4_e2b_it_bf16.safetensors --local-dir "$M"
   bajar Lightricks/LTX-2.5-22b-IC-LoRA-Pixel-Spatial-Upscaler ltx-2.5-22b-ic-lora-pixel-spatial-upscaler-x2-1.0.safetensors --local-dir "$M/loras"
+  bajar Lightricks/LTX-2.5-22b-IC-LoRA-Restore ltx-2.5-22b-ic-lora-restore-1.0.safetensors --local-dir "$M/loras"
   bajar Lightricks/LTX-2.5-22b-IC-LoRA-Refine-Details ltx-2.5-22b-ic-lora-refine-details-1.0.safetensors --local-dir "$M/loras"
 fi
 hay hdr && { pip install -q openimageio || echo "AVISO: openimageio no se instaló"; echo "hdr: LoRA de HDR de 2.5 pendiente de localizar"; }
