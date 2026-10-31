@@ -30,11 +30,20 @@ def _short_edge_ladder(m):
     return ladder
 
 
+def _trained_tile(pick, norm):  # "HD" = tamaño de entrenamiento de Refine Details: 1024x576, o 576x1024 en vertical
+    def choose(sizes, choice):
+        if norm(choice) in ("hd", "720p", "720"):
+            return (576, 1024, "HD") if sizes.fullhd_height > sizes.fullhd_width else (1024, 576, "HD")
+        return pick(sizes, choice)
+    return choose
+
+
 def _patch():  # ComfyUI no garantiza el orden de carga: se espera a que LTX esté importado
     for _ in range(300):
         for m in list(sys.modules.values()):
             if getattr(m, "__name__", "").endswith("tiled_fusion_sizes") and hasattr(m, "_ladder_step"):
                 m._ladder_step = _short_edge_ladder(m)
+                m._pick_tile_or_canvas = _trained_tile(m._pick_tile_or_canvas, m._norm_label)
                 print("[ShortSide1080] tamaños medidos por lado corto")
                 return
         time.sleep(1)
