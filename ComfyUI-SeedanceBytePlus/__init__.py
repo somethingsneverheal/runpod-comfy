@@ -32,6 +32,6 @@ class SeedanceBytePlus:
             if s["status"] in("failed","expired","cancelled"):raise RuntimeError(json.dumps(s)[:800])
             time.sleep(10)
         else:raise RuntimeError("seedance: 2 h sin terminar, tarea "+t)
-        out=f"{prefix}_{t}.mp4";urllib.request.urlretrieve(s["content"]["video_url"],os.path.join(folder_paths.get_output_directory(),out))
-        return {"ui":{"text":[json.dumps({"file":out,"task":t,"usage":s.get("usage")})]}}
+        # ponytail: el pod no siempre llega al almacen de BytePlus; se devuelve el enlace y baja quien pueda
+        return {"ui":{"text":[json.dumps({"url":s["content"]["video_url"],"task":t,"usage":s.get("usage"),"status":s["status"]})]}}
 NODE_CLASS_MAPPINGS={"SeedanceBytePlus":SeedanceBytePlus}
