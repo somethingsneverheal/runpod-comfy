@@ -6,12 +6,12 @@ API="https://ark.ap-southeast.bytepluses.com/api/v3/contents/generations/tasks"
 MIME={".mp4":"video/mp4",".mov":"video/quicktime"}
 def call(url,body=None):
     r=urllib.request.Request(url,json.dumps(body).encode() if body else None,{"Content-Type":"application/json","Authorization":"Bearer "+os.environ["BYTEPLUS_API_KEY"]})
-    try:return json.load(urllib.request.urlopen(r,timeout=120))
+    try:return json.load(urllib.request.urlopen(r,timeout=900))
     except urllib.error.HTTPError as e:raise RuntimeError(f"BytePlus {e.code}: {e.read().decode()[:800]}")
 def ref(name):
     p=folder_paths.get_annotated_filepath(name);x=os.path.splitext(p)[1].lower()
     if x in MIME:return {"type":"video_url","video_url":{"url":f"data:{MIME[x]};base64,"+base64.b64encode(open(p,"rb").read()).decode()},"role":"reference_video"}
-    im=ImageOps.exif_transpose(Image.open(p)).convert("RGB");im.thumbnail((2048,2048));b=io.BytesIO();im.save(b,"JPEG",quality=92)
+    im=ImageOps.exif_transpose(Image.open(p)).convert("RGB");im.thumbnail((1280,1280));b=io.BytesIO();im.save(b,"JPEG",quality=88)
     return {"type":"image_url","image_url":{"url":"data:image/jpeg;base64,"+base64.b64encode(b.getvalue()).decode()},"role":"reference_image"}
 class SeedanceBytePlus:
     OUTPUT_NODE=True;RETURN_TYPES=();FUNCTION="run";CATEGORY="video"
