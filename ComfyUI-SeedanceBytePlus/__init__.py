@@ -27,6 +27,7 @@ class SeedanceBytePlus:
         print("seedance tarea",t,flush=True);fin=time.time()+7200
         while time.time()<fin:
             s=call(f"{API}/{t}")
+            print("seedance estado",t,s["status"],s.get("updated_at"),flush=True)
             if s["status"]=="succeeded":break
             if s["status"] in("failed","expired","cancelled"):raise RuntimeError(json.dumps(s)[:800])
             time.sleep(10)
