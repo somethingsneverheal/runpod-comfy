@@ -16,14 +16,14 @@ def ref(name):
 class SeedanceBytePlus:
     OUTPUT_NODE=True;RETURN_TYPES=();FUNCTION="run";CATEGORY="video"
     @classmethod
-    def INPUT_TYPES(c):return {"required":{"prompt":("STRING",{"multiline":True}),"refs":("STRING",{"multiline":True,"tooltip":"un archivo de input por linea"}),"resolution":(["480p","720p","1080p"],{"default":"720p"}),"ratio":(["16:9","9:16","4:3","3:4","1:1","21:9"],),"duration":("INT",{"default":8,"min":4,"max":30}),"prefix":("STRING",{"default":"seedance"})},"optional":{"task_id":("STRING",{"default":"","tooltip":"recoger una tarea ya creada, sin generar ni pagar otra"})}}
+    def INPUT_TYPES(c):return {"required":{"prompt":("STRING",{"multiline":True}),"refs":("STRING",{"multiline":True,"tooltip":"un archivo de input por linea"}),"resolution":(["480p","720p","1080p"],{"default":"720p"}),"ratio":(["16:9","9:16","4:3","3:4","1:1","21:9"],),"duration":("INT",{"default":8,"min":4,"max":30}),"prefix":("STRING",{"default":"seedance"})},"optional":{"task_id":("STRING",{"default":"","tooltip":"recoger una tarea ya creada, sin generar ni pagar otra"}),"seed":("INT",{"default":-1,"min":-1,"max":4294967295,"tooltip":"-1 = al azar; poner la de una tarea anterior para repetirla"})}}
     @classmethod
     def IS_CHANGED(c,**k):return time.time()  # cada lanzamiento cuesta: nunca reutilizar por cache sin que se pida
-    def run(self,prompt,refs,resolution,ratio,duration,prefix,task_id=""):
+    def run(self,prompt,refs,resolution,ratio,duration,prefix,task_id="",seed=-1):
         t=task_id.strip()
         if not t:
             content=[{"type":"text","text":prompt}]+[ref(n.strip()) for n in refs.splitlines() if n.strip()]
-            t=call(API,{"model":"dreamina-seedance-2-5-260628","content":content,"resolution":resolution,"ratio":ratio,"duration":duration,"generate_audio":False,"watermark":False})["id"]
+            t=call(API,{"model":"dreamina-seedance-2-5-260628","content":content,"resolution":resolution,"ratio":ratio,"duration":duration,"generate_audio":False,"watermark":False,**({"seed":seed} if seed>=0 else {})})["id"]
         print("seedance tarea",t,flush=True);fin=time.time()+7200
         while time.time()<fin:
             s=call(f"{API}/{t}")
@@ -33,5 +33,5 @@ class SeedanceBytePlus:
             time.sleep(10)
         else:raise RuntimeError("seedance: 2 h sin terminar, tarea "+t)
         # ponytail: el pod no siempre llega al almacen de BytePlus; se devuelve el enlace y baja quien pueda
-        return {"ui":{"text":[json.dumps({"url":s["content"]["video_url"],"task":t,"usage":s.get("usage"),"status":s["status"]})]}}
+        return {"ui":{"text":[json.dumps({"url":s["content"]["video_url"],"task":t,"usage":s.get("usage"),"status":s["status"],"seed":s.get("seed"),"resolution":s.get("resolution")})]}}
 NODE_CLASS_MAPPINGS={"SeedanceBytePlus":SeedanceBytePlus}
