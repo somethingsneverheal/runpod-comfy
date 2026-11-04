@@ -25,6 +25,7 @@ class SeedanceBytePlus:
         if not t:
             content=[{"type":"text","text":prompt}]+[ref(n.strip()) for n in refs.splitlines() if n.strip()]
             b={"model":"dreamina-seedance-2-5-260628","content":content,"resolution":resolution,"ratio":ratio,"duration":duration,"generate_audio":False,"watermark":False,**({"seed":seed} if seed>=0 else {})}
+            if any(c.get("type")=="video_url" for c in content):b.pop("ratio",None);b.pop("duration",None)  # edición de vídeo: salen del vídeo de entrada
             if draft:b["draft"]=True
             if draft_job_id.strip():b={"model":b["model"],"draft_job_id":draft_job_id.strip(),"resolution":"1080p","generate_audio":False,"watermark":False}
             t=call(API,b)["id"]
