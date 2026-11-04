@@ -16,14 +16,17 @@ def ref(name):
 class SeedanceBytePlus:
     OUTPUT_NODE=True;RETURN_TYPES=();FUNCTION="run";CATEGORY="video"
     @classmethod
-    def INPUT_TYPES(c):return {"required":{"prompt":("STRING",{"multiline":True}),"refs":("STRING",{"multiline":True,"tooltip":"un archivo de input por linea"}),"resolution":(["480p","720p","1080p"],{"default":"720p"}),"ratio":(["16:9","9:16","4:3","3:4","1:1","21:9"],),"duration":("INT",{"default":8,"min":4,"max":30}),"prefix":("STRING",{"default":"seedance"})},"optional":{"task_id":("STRING",{"default":"","tooltip":"recoger una tarea ya creada, sin generar ni pagar otra"}),"seed":("INT",{"default":-1,"min":-1,"max":4294967295,"tooltip":"-1 = al azar; poner la de una tarea anterior para repetirla"})}}
+    def INPUT_TYPES(c):return {"required":{"prompt":("STRING",{"multiline":True}),"refs":("STRING",{"multiline":True,"tooltip":"un archivo de input por linea"}),"resolution":(["480p","720p","1080p"],{"default":"720p"}),"ratio":(["16:9","9:16","4:3","3:4","1:1","21:9"],),"duration":("INT",{"default":8,"min":4,"max":30}),"prefix":("STRING",{"default":"seedance"})},"optional":{"task_id":("STRING",{"default":"","tooltip":"recoger una tarea ya creada, sin generar ni pagar otra"}),"seed":("INT",{"default":-1,"min":-1,"max":4294967295,"tooltip":"-1 = al azar; poner la de una tarea anterior para repetirla"}),"draft":("BOOLEAN",{"default":False,"tooltip":"borrador 480p barato; se finaliza luego a 1080p con draft_job_id"}),"draft_job_id":("STRING",{"default":"","tooltip":"tarea borrador ya hecha: la finaliza a 1080p igual"})}}
     @classmethod
     def IS_CHANGED(c,**k):return time.time()  # cada lanzamiento cuesta: nunca reutilizar por cache sin que se pida
-    def run(self,prompt,refs,resolution,ratio,duration,prefix,task_id="",seed=-1):
+    def run(self,prompt,refs,resolution,ratio,duration,prefix,task_id="",seed=-1,draft=False,draft_job_id=""):
         t=task_id.strip()
         if not t:
             content=[{"type":"text","text":prompt}]+[ref(n.strip()) for n in refs.splitlines() if n.strip()]
-            t=call(API,{"model":"dreamina-seedance-2-5-260628","content":content,"resolution":resolution,"ratio":ratio,"duration":duration,"generate_audio":False,"watermark":False,**({"seed":seed} if seed>=0 else {})})["id"]
+            b={"model":"dreamina-seedance-2-5-260628","content":content,"resolution":resolution,"ratio":ratio,"duration":duration,"generate_audio":False,"watermark":False,**({"seed":seed} if seed>=0 else {})}
+            if draft:b["draft"]=True
+            if draft_job_id.strip():b={"model":b["model"],"draft_job_id":draft_job_id.strip(),"resolution":"1080p","generate_audio":False,"watermark":False}
+            t=call(API,b)["id"]
         print("seedance tarea",t,flush=True);fin=time.time()+7200
         while time.time()<fin:
             s=call(f"{API}/{t}")
