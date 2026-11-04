@@ -10,7 +10,8 @@ def call(url,body=None):
     except urllib.error.HTTPError as e:raise RuntimeError(f"BytePlus {e.code}: {e.read().decode()[:800]}")
 def ref(name):
     p=folder_paths.get_annotated_filepath(name);x=os.path.splitext(p)[1].lower()
-    if x in MIME:return {"type":"video_url","video_url":{"url":f"data:{MIME[x]};base64,"+base64.b64encode(open(p,"rb").read()).decode()},"role":"reference_video"}
+    if x in MIME:  # BytePlus solo acepta vídeo por enlace web: se sirve desde el proxy público del pod
+        return {"type":"video_url","video_url":{"url":f"https://{os.environ['RUNPOD_POD_ID']}-8188.proxy.runpod.net/view?filename={os.path.basename(p)}&type=input"},"role":"reference_video"}
     im=ImageOps.exif_transpose(Image.open(p)).convert("RGB");im.thumbnail((1280,1280));b=io.BytesIO();im.save(b,"JPEG",quality=88)
     return {"type":"image_url","image_url":{"url":"data:image/jpeg;base64,"+base64.b64encode(b.getvalue()).decode()},"role":"reference_image"}
 class SeedanceBytePlus:
