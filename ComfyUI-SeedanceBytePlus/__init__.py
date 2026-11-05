@@ -40,3 +40,21 @@ class SeedanceBytePlus:
         # ponytail: el pod no siempre llega al almacen de BytePlus; se devuelve el enlace y baja quien pueda
         return {"ui":{"text":[json.dumps({"url":s["content"]["video_url"],"task":t,"usage":s.get("usage"),"status":s["status"],"seed":s.get("seed"),"resolution":s.get("resolution")})]}}
 NODE_CLASS_MAPPINGS={"SeedanceBytePlus":SeedanceBytePlus}
+
+IMG_API="https://ark.ap-southeast.bytepluses.com/api/v3/images/generations"
+class SeedreamBytePlus:
+    OUTPUT_NODE=True;RETURN_TYPES=();FUNCTION="run";CATEGORY="image"
+    @classmethod
+    def INPUT_TYPES(c):return {"required":{"prompt":("STRING",{"multiline":True}),"refs":("STRING",{"multiline":True}),"model":("STRING",{"default":"seedream-4-5-251128"}),"size":("STRING",{"default":"2560x1440"})},"optional":{"seed":("INT",{"default":-1,"min":-1,"max":4294967295})}}
+    @classmethod
+    def IS_CHANGED(c,**k):return time.time()
+    def run(self,prompt,refs,model,size,seed=-1):
+        ims=[]
+        for n in refs.splitlines():
+            if not n.strip():continue
+            im=ImageOps.exif_transpose(Image.open(folder_paths.get_annotated_filepath(n.strip()))).convert("RGB");im.thumbnail((2560,2560));b=io.BytesIO();im.save(b,"JPEG",quality=92)
+            ims.append("data:image/jpeg;base64,"+base64.b64encode(b.getvalue()).decode())
+        body={"model":model,"prompt":prompt,"image":ims,"size":size,"sequential_image_generation":"disabled","response_format":"url","watermark":False,**({"seed":seed} if seed>=0 else {})}
+        r=call(IMG_API,body)
+        return {"ui":{"text":[json.dumps({"url":r["data"][0]["url"],"usage":r.get("usage"),"model":model})]}}
+NODE_CLASS_MAPPINGS["SeedreamBytePlus"]=SeedreamBytePlus
